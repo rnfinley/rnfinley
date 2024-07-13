@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Return Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        input { width: 90%; padding: 5px; }
+        #salePrice, #transactionPercentage { width: 200px; }
+        .percentage-total { font-weight: bold; margin-top: 10px; }
+        .input-group { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Investment Return Calculator</h1>
+    <div class="input-group">
+        <label for="salePrice">Sale Price ($): </label>
+        <input type="number" id="salePrice" value="7000000" onchange="calculateReturns()">
+    </div>
+    <div class="input-group">
+        <label for="transactionPercentage">Transaction Cost (%): </label>
+        <input type="number" id="transactionPercentage" value="10" min="0" max="100" step="0.01" onchange="calculateReturns()">
+    </div>
+    
+    <table id="returnsTable">
+        <thead>
+            <tr>
+                <th>Investor</th>
+                <th>Investment ($)</th>
+                <th>Percentage (%)</th>
+                <th>Return ($)</th>
+                <th>ROI (%)</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <div class="percentage-total">Total Percentage: <span id="percentageTotal">0</span>%</div>
+
+    <script>
+        const totalEquity = 4600000;
+        const loanAmount = 2000000;
+
+        const investors = [
+            { name: "Great Scott Seed Fund LLC (Sue Scott)", investment: 1545000, percentage: 33.59 },
+            { name: "Bucky Opportunity Fund LLC", investment: 1000000, percentage: 18.45 },
+            { name: "CG Mars QOF, LLC", investment: 650000, percentage: 12.00 },
+            { name: "Ford OZ, LLC", investment: 500000, percentage: 9.22 },
+            { name: "Plan Flute Parade LLC", investment: 300000, percentage: 5.53 },
+            { name: "Frog and Toad Together, LLC", investment: 250000, percentage: 4.61 },
+            { name: "GS3 QOF, LLC", investment: 205000, percentage: 3.78 },
+            { name: "Andrew Smith", investment: 150000, percentage: 2.77 }
+        ];
+
+        function calculateReturns() {
+            const salePrice = parseFloat(document.getElementById('salePrice').value);
+            const transactionCostPercentage = parseFloat(document.getElementById('transactionPercentage').value) / 100;
+            const transactionCosts = salePrice * transactionCostPercentage;
+            const netProceeds = salePrice - transactionCosts - loanAmount;
+            
+            const tbody = document.querySelector('#returnsTable tbody');
+            tbody.innerHTML = '';
+
+            let totalPercentage = 0;
+
+            investors.forEach((investor, index) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = investor.name;
+                row.insertCell(1).textContent = '$' + investor.investment.toLocaleString();
+                
+                const percentageInput = document.createElement('input');
+                percentageInput.type = 'number';
+                percentageInput.value = investor.percentage;
+                percentageInput.step = '0.01';
+                percentageInput.min = '0';
+                percentageInput.max = '100';
+                percentageInput.onchange = function() {
+                    investors[index].percentage = parseFloat(this.value) || 0;
+                    calculateReturns();
+                };
+                row.insertCell(2).appendChild(percentageInput);
+
+                const percentage = parseFloat(percentageInput.value);
+                totalPercentage += percentage;
+
+                const investorReturn = (netProceeds > 0) ? (percentage / 100) * netProceeds : 0;
+                const roi = ((investorReturn - investor.investment) / investor.investment) * 100;
+
+                row.insertCell(3).textContent = '$' + Math.max(0, investorReturn).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                row.insertCell(4).textContent = roi.toFixed(2) + '%';
+            });
+
+            document.getElementById('percentageTotal').textContent = totalPercentage.toFixed(2);
+        }
+
+        calculateReturns(); // Initial calculation
+    </script>
+</body>
+</html>
